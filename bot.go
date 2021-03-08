@@ -1,13 +1,42 @@
 package qqbot_for_husthole
 
 import (
-"fmt"
-"github.com/xioxu/goreq"
-"strconv"
-"time"
+	"database/sql"
+	"fmt"
+	"github.com/go-redis/redis"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/xioxu/goreq"
+	"strconv"
+	"time"
 )
 
-func SendReplyNotice (isComment bool, userID uint64, holeID, replyID uint, timestamp time.Time, userAlias, content string) {
+type QQBot struct {
+	BotServer string
+	RedirectServer string
+	Rdb *redis.Client
+	Db *sql.DB
+}
+
+func InitBot (botServer, redirectServer, mysqlConn, redisConn, redisPswd string, redisDB int) (bot *QQBot, err error) {
+	rdb := redis.NewClient(&redis.Options{
+		Addr: redisConn,
+		Password: redisPswd,
+		DB: redisDB,
+	})
+	db, err := sql.Open("mysql", mysqlConn)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	return &QQBot{
+		BotServer: botServer,
+		RedirectServer: redirectServer,
+		Rdb: rdb,
+		Db: db,
+	}, nil
+}
+
+func (bot *QQBot) SendReplyNotice (isComment bool, userID uint64, holeID, replyID uint, timestamp time.Time, userAlias, content, original string) (err error) {
 	noticeStr := ""
 	holeIDStr := strconv.Itoa(int(holeID))
 	replyIDStr := strconv.Itoa(int(replyID))
@@ -18,13 +47,14 @@ func SendReplyNotice (isComment bool, userID uint64, holeID, replyID uint, times
 	}
 	noticeStr += "时间：" + timestamp.Format("03:04:05") + "%0A"
 	noticeStr += "内容：" + content + "%0A"
-	noticeStr += "查看回复：" + REDIRECT_SERVER + "?holeID=" + holeIDStr + "%26replyID=" + replyIDStr
+	noticeStr += "查看回复：" + bot.RedirectServer + "?holeID=" + holeIDStr + "%26replyID=" + replyIDStr
 	req := goreq.Req(nil)
-	url := BOT_SERVER + "send_private_msg?user_id=" + strconv.Itoa(int(userID)) + "&message=" + noticeStr
+	url := bot.BotServer + "send_private_msg?user_id=" + strconv.Itoa(int(userID)) + "&message=" + noticeStr
 	fmt.Println("url: ", url)
 	fmt.Println("notice: ", noticeStr)
-	body, _, _ := req.Get(url).Do()
+	body, _, err := req.Get(url).Do()
 	fmt.Println(string(body))
+	return
 
 	// 分享卡片部分
 	/*title := "%23" + strconv.Itoa(int(holeNum))
@@ -35,3 +65,4 @@ func SendReplyNotice (isComment bool, userID uint64, holeID, replyID uint, times
 	body, _, _ = req.Get(url).Do()
 	fmt.Println(string(body))*/
 }
+
