@@ -36,6 +36,27 @@ func InitBot (botServer, redirectServer, mysqlConn, redisConn, redisPswd string,
 	}, nil
 }
 
+/*
+功能：发送回复通知
+
+参数：
+
+isComment: 是否为对树洞本身的回复
+
+userID: 目标QQ
+
+holeID: 树洞号
+
+replyID: 回复ID
+
+timestamp: 回复时间戳
+
+userAlias: 树洞昵称
+
+content: 回复内容
+
+original: 回复目标内容
+ */
 func (bot *QQBot) SendReplyNotice (isComment bool, userID uint64, holeID, replyID uint, timestamp time.Time, userAlias, content, original string) (err error) {
 	noticeStr := ""
 	holeIDStr := strconv.Itoa(int(holeID))
