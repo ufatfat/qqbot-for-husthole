@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/xioxu/goreq"
+	url2 "net/url"
 	"strconv"
 	"time"
 )
@@ -43,24 +44,28 @@ func InitBot (botServer, redirectServer, mysqlConn, redisConn, redisPswd string,
 
 isComment: 是否为对树洞本身的回复
 
-userID: 目标QQ
-
 holeID: 树洞号
 
 replyID: 回复ID
 
 timestamp: 回复时间戳
 
+encryptedEmail: 加密后的用户email
+
 userAlias: 树洞昵称
 
 content: 回复内容
-
-original: 回复目标内容
  */
-func (bot *QQBot) SendReplyNotice (isComment bool, userID uint64, holeID, replyID uint, timestamp time.Time, userAlias, content, original string) (err error) {
+func (bot *QQBot) SendReplyNotice (isComment bool, holeID, replyID uint, timestamp time.Time, encryptedEmail, userAlias, content string) (err error) {
+	userID, _ := bot.getQQByEncryptedEmail(encryptedEmail)
 	noticeStr := ""
 	holeIDStr := strconv.Itoa(int(holeID))
 	replyIDStr := strconv.Itoa(int(replyID))
+
+	// 回复引用
+	/*if original != "" {
+		noticeStr += "[CQ:reply,text=Hello%20World,qq=10086,time=3376656000,seq=5123]"
+	}*/
 	if isComment {
 		noticeStr += userAlias + "回复了您发表的%23" + holeIDStr + "号树洞%0A"
 	} else {
@@ -70,7 +75,7 @@ func (bot *QQBot) SendReplyNotice (isComment bool, userID uint64, holeID, replyI
 	noticeStr += "内容：" + content + "%0A"
 	noticeStr += "查看回复：" + bot.RedirectServer + "?holeID=" + holeIDStr + "%26replyID=" + replyIDStr
 	req := goreq.Req(nil)
-	url := bot.BotServer + "send_private_msg?user_id=" + strconv.Itoa(int(userID)) + "&message=" + noticeStr
+	url := bot.BotServer + "send_private_msg?user_id=" + strconv.Itoa(int(userID)) + "&message=" + url2.QueryEscape(content)
 	fmt.Println("url: ", url)
 	fmt.Println("notice: ", noticeStr)
 	body, _, err := req.Get(url).Do()
