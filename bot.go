@@ -87,3 +87,10 @@ func (bot *QQBot) SendReplyNotice (isComment bool, userID uint64, holeID, replyI
 	fmt.Println(string(body))*/
 }
 
+func (bot *QQBot) sendSuccessfullyAddedMsg (userID int64) (err error) {
+	req := goreq.Req(nil)
+	url := bot.BotServer + "send_private_msg?user_id=" + strconv.FormatInt(userID, 10) + "&message=恭喜您已绑定成功！"
+	body, _, err := req.Get(url).Do()
+	fmt.Println(string(body))
+	return
+}

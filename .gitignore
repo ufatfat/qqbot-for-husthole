@@ -3,3 +3,4 @@ vendor/
 .idea
 .git
 consts.go
+bot_test.go
