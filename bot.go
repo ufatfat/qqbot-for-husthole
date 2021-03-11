@@ -2,6 +2,7 @@ package qqbot_for_husthole
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/go-redis/redis"
 	_ "github.com/go-sql-driver/mysql"
@@ -16,6 +17,7 @@ type QQBot struct {
 	RedirectServer string
 	Rdb *redis.Client
 	Db *sql.DB
+	ErrQQBound error
 }
 
 func InitBot (botServer, redirectServer, mysqlConn, redisConn, redisPswd string, redisDB int) (bot *QQBot, err error) {
@@ -34,6 +36,7 @@ func InitBot (botServer, redirectServer, mysqlConn, redisConn, redisPswd string,
 		RedirectServer: redirectServer,
 		Rdb: rdb,
 		Db: db,
+		ErrQQBound: errors.New("QQ bound"),
 	}, nil
 }
 
