@@ -34,7 +34,8 @@ type BindInfo struct {
  */
 func (bot *QQBot) BindQQ (QQ int64, encryptedEmail string) (err error) {
 	QQStr := strconv.FormatInt(QQ, 10)
-	if err = bot.Db.QueryRow("select id from qq_bind where user_id=?", QQ).Err(); err == nil {
+	var id int64
+	if _ = bot.Db.QueryRow("select id from qq_bind where user_id=?", QQ).Scan(&id); id == 0 {
 		return errors.New("QQ bound")
 	}
 	key := "bindQQ:" + QQStr
