@@ -134,3 +134,9 @@ func (bot *QQBot) BotEventHandler (c *gin.Context) {
 		
 	}
 }
+
+// 返回Bot的QQ号，
+// 现暂只有一个Bot
+func (bot *QQBot) GetBotQQ () (botQQ int64, err error) {
+	return 732343768, nil
+}
