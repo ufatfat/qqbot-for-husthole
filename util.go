@@ -146,11 +146,10 @@ func (bot *QQBot) GetStatus (encryptedEmail string) (status bool, err error) {
 	return
 }
 
-func (bot *QQBot) ToggleStatus (encryptedEmail string) (err error) {
-	var status bool
+func (bot *QQBot) ToggleStatus (encryptedEmail string) (status bool, err error) {
 	if err = bot.Db.QueryRow("select is_active from qq_bind where email=?", encryptedEmail).Scan(&status); err != nil {
 		return
 	}
 	_, err = bot.Db.Exec("update qq_bind set is_active=?", !status)
-	return
+	return !status, err
 }
