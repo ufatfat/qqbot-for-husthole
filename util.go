@@ -140,3 +140,17 @@ func (bot *QQBot) BotEventHandler (c *gin.Context) {
 func (bot *QQBot) GetBotQQ () (botQQ int64, err error) {
 	return 732343768, nil
 }
+
+func (bot *QQBot) GetStatus (encryptedEmail string) (status bool, err error) {
+	err = bot.Db.QueryRow("select is_active from qq_bind where email=?", encryptedEmail).Scan(&status)
+	return
+}
+
+func (bot *QQBot) ToggleStatus (encryptedEmail string) (err error) {
+	var status bool
+	if err = bot.Db.QueryRow("select is_active from qq_bind where email=?", encryptedEmail).Scan(&status); err != nil {
+		return
+	}
+	_, err = bot.Db.Exec("update qq_bind set is_active=?", !status)
+	return
+}
